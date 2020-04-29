@@ -1,44 +1,101 @@
 package com.example.nikeapplication.viewmodel
 
+import android.view.View
+import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.nikeapplication.model.Item
-import com.example.nikeapplication.model.networking.RetrofitBuilder
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.example.nikeapplication.model.networking.UrbanDictionaryRepository
+import com.example.nikeapplication.view.MyRecyclerViewAdapter
+import com.jakewharton.rxbinding.support.v7.widget.RxSearchView
+import io.reactivex.disposables.CompositeDisposable
+import rx.Notification
+import java.net.UnknownHostException
+import java.util.concurrent.TimeUnit
 
-const val BASE_URL = "https://mashape-community-urban-dictionary.p.rapidapi.com/"
-
-class MyViewModel: ViewModel() {
+class MyViewModel(private val urbanDictionaryRepository: UrbanDictionaryRepository): ViewModel() {
     private var itemMutableLiveData = MutableLiveData<List<Item>>()
     val itemLiveData: LiveData<List<Item>>
         get() = itemMutableLiveData
+    val progressBarVisibilityMutableLiveData = MutableLiveData<Int>()
+    val listVisibilityMutableLiveData = MutableLiveData<Int>()
+    val listVisibilityLiveData: LiveData<Int>
+        get() = listVisibilityMutableLiveData
+    val progressBarVisibilityLiveData: LiveData<Int>
+        get() = progressBarVisibilityMutableLiveData
+    val errorVisibilityMutableLiveData = MutableLiveData<Int>()
+    val errorVisibilityLiveData: LiveData<Int>
+        get() = errorVisibilityMutableLiveData
+    val errorMessageMutableLiveData = MutableLiveData<String>()
+    val errorMessageLiveData: LiveData<String>
+        get() = errorMessageMutableLiveData
 
-    fun getDefinitions(searchTerm: String) {
-        val retrofit = RetrofitBuilder().getRetrofit(BASE_URL)
+    private val disposable = CompositeDisposable()
+    val adapter = MyRecyclerViewAdapter()
 
-        CoroutineScope(Dispatchers.IO).launch {
-            val response = retrofit.getItems(searchTerm)
-            withContext(Dispatchers.Main) {
-                itemMutableLiveData.postValue(response.list)
+    init {
+        progressBarVisibilityMutableLiveData.value = View.GONE
+        errorVisibilityMutableLiveData.value = View.GONE
+    }
+
+    fun doSearch(searchView: SearchView) {
+        RxSearchView.queryTextChanges(searchView)
+            .doOnEach { notification: Notification<in CharSequence?> ->
+                val query = notification.value as CharSequence?
+                if (query != null && !query.isBlank()) {
+                    getDefinitions(query.toString())
+                }
             }
-        }
+            .debounce(
+                300,
+                TimeUnit.MILLISECONDS
+            ) // to skip intermediate letters
+            .retry(3)
+            .subscribe()
     }
 
-    fun sortByThumbsUp() {
-        val list = itemMutableLiveData.value
-        list?.let {
-            itemMutableLiveData.postValue(it.sortedByDescending { it.thumbs_up })
-        }
+    private fun getDefinitions(searchTerm: String) {
+        displayProgressBar()
+
+        disposable.add(
+            urbanDictionaryRepository
+                .getDefinitionList(searchTerm)
+                .subscribe({
+                    itemMutableLiveData.postValue(it)
+                    adapter.items = it
+
+                    if (it.isEmpty()) {
+                        displayMessage("No Definitions Found")
+                    } else {
+                        displayList()
+                    }
+                }, {
+                    val errorString = when (it) {
+                        is UnknownHostException -> "No Internet Connection"
+                        else -> it.localizedMessage
+                    }
+                    displayMessage(errorString)
+                })
+        )
     }
 
-    fun sortByThumbsDown() {
-        val list = itemMutableLiveData.value
-        list?.let {
-            itemMutableLiveData.postValue(it.sortedBy { it.thumbs_up })
-        }
+    private fun displayList() {
+        progressBarVisibilityMutableLiveData.value = View.GONE
+        listVisibilityMutableLiveData.value = View.VISIBLE
+        errorVisibilityMutableLiveData.value = View.GONE
+    }
+
+    private fun displayProgressBar() {
+        progressBarVisibilityMutableLiveData.value = View.VISIBLE
+        listVisibilityMutableLiveData.value = View.GONE
+        errorVisibilityMutableLiveData.value = View.GONE
+    }
+
+    private fun displayMessage(message: String) {
+        progressBarVisibilityMutableLiveData.value = View.GONE
+        listVisibilityMutableLiveData.value = View.GONE
+        errorVisibilityMutableLiveData.value = View.VISIBLE
+        errorMessageMutableLiveData.value = message
     }
 }

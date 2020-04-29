@@ -2,60 +2,59 @@ package com.example.nikeapplication.view
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.View
+import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.nikeapplication.R
+import com.example.nikeapplication.databinding.ActivityMainBinding
+import com.example.nikeapplication.injection.Injection
 import com.example.nikeapplication.viewmodel.MyViewModel
+import com.example.nikeapplication.viewmodel.MyViewModelFactory
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
-    private val adapter by lazy { MyRecyclerViewAdapter(this) }
-    private val viewModel by lazy { ViewModelProviders.of(this).get(MyViewModel::class.java) }
+    private val injection = Injection()
+    private val viewModel by lazy { ViewModelProvider(this, MyViewModelFactory(injection.provideUserRepo(this.applicationContext))).get(MyViewModel::class.java) }
+    private var binding: ActivityMainBinding? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
-        recycler_view.adapter = adapter
-        recycler_view.layoutManager = LinearLayoutManager(this)
-
-        btn_search.setOnClickListener { v ->
-            if (!editText.text.toString().isBlank()) {
-                // the web test of the api does not let you query empty strings, so neither am I.
-                progress_bar.visibility = View.VISIBLE
-
-                viewModel.getDefinitions(editText.text.toString())
-                viewModel.itemLiveData.observe(this, Observer {
-                    adapter.items = it
-                    progress_bar.visibility = View.GONE
-                    btn_sort_thumbs_up.isEnabled = true
-                    btn_sort_thumbs_down.isEnabled = true
-                })
-            }
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+        binding?.recyclerView?.layoutManager = LinearLayoutManager(
+            this, LinearLayoutManager.VERTICAL, false)
+        binding?.let {
+            it.viewModel = viewModel
         }
 
-        btn_sort_thumbs_up.setOnClickListener { v ->
-            viewModel.sortByThumbsUp()
-            viewModel.itemLiveData.observe(this, Observer {
-                adapter.items = it
-            })
+        initButtons()
+        wordSearch()
+    }
+
+    private fun initButtons() {
+        viewModel.itemLiveData.observe(this, Observer {
+            btn_sort_thumbs_up.isEnabled = it.isNotEmpty()
+            btn_sort_thumbs_down.isEnabled = it.isNotEmpty()
+        })
+
+        btn_sort_thumbs_up.setOnClickListener {
+            viewModel.adapter.sortByThumbsUp()
         }
 
-        btn_sort_thumbs_down.setOnClickListener { v ->
-            viewModel.sortByThumbsDown()
-            viewModel.itemLiveData.observe(this, Observer {
-                adapter.items = it
-            })
+        btn_sort_thumbs_down.setOnClickListener {
+            viewModel.adapter.sortByThumbsDown()
         }
+    }
+
+    private fun wordSearch() {
+        viewModel.doSearch(word_search)
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         viewModel.itemLiveData.observe(this, Observer {
-            adapter.items = it
+            viewModel.adapter.items = it
         })
     }
 }

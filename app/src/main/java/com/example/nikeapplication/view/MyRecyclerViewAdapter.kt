@@ -1,6 +1,5 @@
 package com.example.nikeapplication.view
 
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,15 +8,13 @@ import com.example.nikeapplication.R
 import com.example.nikeapplication.model.Item
 import kotlinx.android.synthetic.main.list_item.view.*
 
-class MyRecyclerViewAdapter (context: Context): RecyclerView.Adapter<MyRecyclerViewAdapter.MyCustomViewHolder>() {
+class MyRecyclerViewAdapter: RecyclerView.Adapter<MyRecyclerViewAdapter.MyCustomViewHolder>() {
 
     var items: List<Item> = emptyList()
         set(value) {
             field = value
             notifyDataSetChanged()
         }
-
-    private val inflater: LayoutInflater = LayoutInflater.from(context)
 
     inner class MyCustomViewHolder(view: View): RecyclerView.ViewHolder(view) {
         private val definition = view.tv_definition
@@ -32,6 +29,7 @@ class MyRecyclerViewAdapter (context: Context): RecyclerView.Adapter<MyRecyclerV
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyCustomViewHolder {
+        val inflater = LayoutInflater.from(parent.context)
         val view = inflater.inflate(R.layout.list_item, parent, false)
         return MyCustomViewHolder(view)
     }
@@ -40,5 +38,13 @@ class MyRecyclerViewAdapter (context: Context): RecyclerView.Adapter<MyRecyclerV
 
     override fun onBindViewHolder(holder: MyCustomViewHolder, position: Int) {
         holder.bind(items[position])
+    }
+
+    fun sortByThumbsUp() {
+        items = items.sortedByDescending { it.thumbs_up }
+    }
+
+    fun sortByThumbsDown() {
+        items = items.sortedByDescending { it.thumbs_down }
     }
 }

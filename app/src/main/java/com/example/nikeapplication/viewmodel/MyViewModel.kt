@@ -1,5 +1,6 @@
 package com.example.nikeapplication.viewmodel
 
+import android.util.Log
 import android.view.View
 import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.LiveData
@@ -24,19 +25,12 @@ class MyViewModel(private val urbanDictionaryRepository: UrbanDictionaryReposito
         get() = listVisibilityMutableLiveData
     val progressBarVisibilityLiveData: LiveData<Int>
         get() = progressBarVisibilityMutableLiveData
-    val errorVisibilityMutableLiveData = MutableLiveData<Int>()
-    val errorVisibilityLiveData: LiveData<Int>
-        get() = errorVisibilityMutableLiveData
-    val errorMessageMutableLiveData = MutableLiveData<String>()
-    val errorMessageLiveData: LiveData<String>
-        get() = errorMessageMutableLiveData
 
     private val disposable = CompositeDisposable()
     val adapter = MyRecyclerViewAdapter()
 
     init {
         progressBarVisibilityMutableLiveData.value = View.GONE
-        errorVisibilityMutableLiveData.value = View.GONE
     }
 
     fun doSearch(searchView: SearchView) {
@@ -64,18 +58,15 @@ class MyViewModel(private val urbanDictionaryRepository: UrbanDictionaryReposito
                 .subscribe({
                     itemMutableLiveData.postValue(it)
                     adapter.items = it
-
-                    if (it.isEmpty()) {
-                        displayMessage("No Definitions Found")
-                    } else {
-                        displayList()
-                    }
+                    displayList()
                 }, {
                     val errorString = when (it) {
                         is UnknownHostException -> "No Internet Connection"
                         else -> it.localizedMessage
                     }
-                    displayMessage(errorString)
+
+                    Log.e("MyViewModel", "An error occurred while fetching results: $errorString", it)
+                    displayList()
                 })
         )
     }
@@ -83,19 +74,10 @@ class MyViewModel(private val urbanDictionaryRepository: UrbanDictionaryReposito
     private fun displayList() {
         progressBarVisibilityMutableLiveData.value = View.GONE
         listVisibilityMutableLiveData.value = View.VISIBLE
-        errorVisibilityMutableLiveData.value = View.GONE
     }
 
     private fun displayProgressBar() {
         progressBarVisibilityMutableLiveData.value = View.VISIBLE
         listVisibilityMutableLiveData.value = View.GONE
-        errorVisibilityMutableLiveData.value = View.GONE
-    }
-
-    private fun displayMessage(message: String) {
-        progressBarVisibilityMutableLiveData.value = View.GONE
-        listVisibilityMutableLiveData.value = View.GONE
-        errorVisibilityMutableLiveData.value = View.VISIBLE
-        errorMessageMutableLiveData.value = message
     }
 }

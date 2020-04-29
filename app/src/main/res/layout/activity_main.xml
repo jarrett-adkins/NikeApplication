@@ -72,19 +72,6 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:enabled="false" />
 
-        <TextView
-            android:id="@+id/messageText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:gravity="center"
-            app:text="@{viewModel.errorMessageLiveData}"
-            app:liveDataVisibility="@{viewModel.errorVisibilityLiveData}"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/word_search"
-            tools:text="error"/>
-
         <androidx.core.widget.ContentLoadingProgressBar
             android:id="@+id/progress_bar"
             android:layout_width="match_parent"

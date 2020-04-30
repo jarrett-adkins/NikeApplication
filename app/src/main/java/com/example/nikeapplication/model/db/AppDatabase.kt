@@ -15,12 +15,12 @@ abstract class AppDatabase : RoomDatabase() {
 
     companion object {
         @Volatile
-        private var databseInstance: AppDatabase? = null
+        private var databaseInstance: AppDatabase? = null
 
         fun getDatabaseInstance(mContext: Context): AppDatabase =
-            databseInstance ?: synchronized(this) {
-                databseInstance ?: buildDatabaseInstance(mContext).also {
-                    databseInstance = it
+            databaseInstance ?: synchronized(this) {
+                databaseInstance ?: buildDatabaseInstance(mContext).also {
+                    databaseInstance = it
                 }
             }
 

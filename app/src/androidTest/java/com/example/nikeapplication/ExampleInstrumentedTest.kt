@@ -1,20 +1,18 @@
 package com.example.nikeapplication
 
+import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.action.ViewActions.click
-import androidx.test.espresso.action.ViewActions.typeText
-import androidx.test.espresso.matcher.ViewMatchers.withId
-import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.espresso.assertion.ViewAssertions
+import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.ActivityTestRule
+import com.example.nikeapplication.CustomMatchers.Companion.typeSearchViewText
 import com.example.nikeapplication.view.MainActivity
-import junit.extensions.ActiveTestSuite
-
+import org.junit.Assert.assertEquals
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-
-import org.junit.Assert.*
-import org.junit.Rule
 
 /**
  * Instrumented test, which will execute on an Android device.
@@ -35,8 +33,15 @@ class ExampleInstrumentedTest {
         assertEquals("com.example.nikeapplication", appContext.packageName)
     }
 
+    @Test
     fun userCanSearch() {
-        onView(withId(R.id.editText)).perform(typeText("wat"))
-        onView(withId(R.id.btn_search)).perform(click())
+        // launch activity
+        ActivityScenario.launch(MainActivity::class.java)
+
+        // check if view is visible
+        onView(withId(R.id.word_search)).check(ViewAssertions.matches(isDisplayed()))
+
+        // enter text
+        onView(withId(R.id.word_search)).perform(typeSearchViewText("words"))
     }
 }

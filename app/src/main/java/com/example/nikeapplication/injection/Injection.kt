@@ -1,6 +1,7 @@
 package com.example.nikeapplication.injection
 
 import android.content.Context
+import com.example.nikeapplication.R
 import com.example.nikeapplication.model.db.AppDatabase
 import com.example.nikeapplication.model.networking.RetrofitBuilder
 import com.example.nikeapplication.model.networking.UrbanDictionaryRepository
@@ -12,12 +13,12 @@ class Injection {
     private var dataBaseInstance: AppDatabase?= null
 
     fun provideUserRepo(context: Context): UrbanDictionaryRepository {
-        return UrbanDictionaryRepositoryImpl(provideUrbanRestService(), provideAppDatabase(context))
+        return UrbanDictionaryRepositoryImpl(provideUrbanRestService(context), provideAppDatabase(context))
     }
 
-    private fun provideUrbanRestService(): UrbanDictionaryService {
+    private fun provideUrbanRestService(context: Context): UrbanDictionaryService {
         if (retrofit == null) {
-            retrofit = RetrofitBuilder().getRetrofit()
+            retrofit = RetrofitBuilder.getRetrofit(context.getString(R.string.base_url))
         }
         return retrofit as UrbanDictionaryService
     }

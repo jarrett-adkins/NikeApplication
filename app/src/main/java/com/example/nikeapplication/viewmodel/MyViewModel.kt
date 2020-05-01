@@ -19,12 +19,14 @@ class MyViewModel(private val urbanDictionaryRepository: UrbanDictionaryReposito
     private var itemMutableLiveData = MutableLiveData<List<Item>>()
     val itemLiveData: LiveData<List<Item>>
         get() = itemMutableLiveData
+
     val progressBarVisibilityMutableLiveData = MutableLiveData<Int>()
+    val progressBarVisibilityLiveData: LiveData<Int>
+        get() = progressBarVisibilityMutableLiveData
+
     val listVisibilityMutableLiveData = MutableLiveData<Int>()
     val listVisibilityLiveData: LiveData<Int>
         get() = listVisibilityMutableLiveData
-    val progressBarVisibilityLiveData: LiveData<Int>
-        get() = progressBarVisibilityMutableLiveData
 
     private val disposable = CompositeDisposable()
     val adapter = MyRecyclerViewAdapter()

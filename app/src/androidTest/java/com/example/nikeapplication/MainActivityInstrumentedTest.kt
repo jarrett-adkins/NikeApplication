@@ -7,6 +7,7 @@ import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.ActivityTestRule
+import com.example.nikeapplication.CustomAssertions.Companion.hasItemCount
 import com.example.nikeapplication.CustomMatchers.Companion.typeSearchViewText
 import com.example.nikeapplication.view.MainActivity
 import org.junit.Assert.assertEquals
@@ -20,7 +21,7 @@ import org.junit.runner.RunWith
  * See [testing documentation](http://d.android.com/tools/testing).
  */
 @RunWith(AndroidJUnit4::class)
-class ExampleInstrumentedTest {
+class MainActivityInstrumentedTest {
 
     @Rule
     @JvmField
@@ -43,5 +44,8 @@ class ExampleInstrumentedTest {
 
         // enter text
         onView(withId(R.id.word_search)).perform(typeSearchViewText("words"))
+
+        // check there are 10 items
+        onView(withId(R.id.recycler_view)).check(hasItemCount(10))
     }
 }

@@ -1,6 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">NikeApplication</string>
     <string name="search">Search</string>
     <string name="most_thumbs_up">most thumbs up</string>
     <string name="most_thumbs_down">most thumbs down</string>
+    <string name="base_url">https://mashape-community-urban-dictionary.p.rapidapi.com</string>
 </resources>

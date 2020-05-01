@@ -5,12 +5,20 @@ import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 
 class RetrofitBuilder {
-    fun getRetrofit (): UrbanDictionaryService {
-        return Retrofit.Builder()
-            .baseUrl("https://mashape-community-urban-dictionary.p.rapidapi.com")
-            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(UrbanDictionaryService::class.java)
+    companion object {
+        private var service: UrbanDictionaryService? = null
+
+        fun getRetrofit (baseUrl: String): UrbanDictionaryService {
+            if (service == null) {
+                service = Retrofit.Builder()
+                    .baseUrl(baseUrl)
+                    .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build()
+                    .create(UrbanDictionaryService::class.java)
+            }
+
+            return service as UrbanDictionaryService
+        }
     }
 }

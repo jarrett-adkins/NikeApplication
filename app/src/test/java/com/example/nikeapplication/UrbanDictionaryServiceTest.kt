@@ -10,13 +10,14 @@ import org.junit.Test
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.junit.MockitoJUnit
+import java.net.UnknownHostException
 
 /**
  * Example local unit test, which will execute on the development machine (host).
  *
  * See [testing documentation](http://d.android.com/tools/testing).
  */
-class ExampleUnitTest {
+class UrbanDictionaryServiceTest {
     @Rule
     @JvmField
     var rule = MockitoJUnit.rule()
@@ -25,18 +26,18 @@ class ExampleUnitTest {
     lateinit var urbanDictionaryService: UrbanDictionaryService
 
     @Test
-    fun testWordList() {
+    fun termIsNotEmpty_getItems_getDefinitionsOfTerm() {
         val itemList = mutableListOf(
             Item(0,"term","definition1", 1, 2),
             Item(1,"term","definition2", 2, 2),
             Item(3,"term","definition3", 3, 1))
         val response = Response(itemList)
-        Mockito.`when`(urbanDictionaryService.getItems("country")).thenReturn(
+        Mockito.`when`(urbanDictionaryService.getItems("term")).thenReturn(
             Single.just(response)
         )
 
         val testObserver: TestObserver<Response> =
-            urbanDictionaryService.getItems("country").test()
+            urbanDictionaryService.getItems("term").test()
 
         testObserver.awaitTerminalEvent()
         testObserver.assertNoErrors()
@@ -54,6 +55,24 @@ class ExampleUnitTest {
                 it.list[2].definition == "definition3"
                 it.list[2].thumbs_up == 3
                 it.list[2].thumbs_down == 1
+            }
+    }
+
+    @Test
+    fun termIsEmpty_getItems_getNoDefs() {
+        val itemList = mutableListOf<Item>()
+        val response = Response(itemList)
+        Mockito.`when`(urbanDictionaryService.getItems("")).thenReturn(
+            Single.just(response)
+        )
+
+        val testObserver: TestObserver<Response> =
+            urbanDictionaryService.getItems("").test()
+
+        testObserver.awaitTerminalEvent()
+        testObserver.assertNoErrors()
+            .assertValue{
+                it.list.size == 0
             }
     }
 }
